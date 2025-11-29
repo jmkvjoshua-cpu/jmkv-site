@@ -166,9 +166,11 @@ body{margin:0;font-family:Inter, system-ui, -apple-system, Arial, sans-serif;bac
         <div>Mon–Sat: 9:00 AM – 7:00 PM</div>
 
     
-<!-- START - Modern WhatsApp Contact Form -->
-<form class="wa-form" onsubmit="event.preventDefault(); sendWhatsAppModern();">
+<!-- START - Modern WhatsApp Contact Form (enhanced) -->
+<!-- optional: add the dark toggle button inside your page header if you have a header -->
+<button id="darkToggle" class="dark-toggle" aria-label="Toggle dark mode">🌙</button>
 
+<form class="wa-form" onsubmit="event.preventDefault(); sendWhatsAppModern();">
   <div class="field">
     <input id="name" placeholder="Your name" required>
   </div>
@@ -178,20 +180,34 @@ body{margin:0;font-family:Inter, system-ui, -apple-system, Arial, sans-serif;bac
   </div>
 
   <div class="field">
-    <textarea id="msg" rows="4"
-      placeholder="Message / camera you want (e.g. Canon 700D for 2 days)" required></textarea>
+    <textarea id="msg" rows="4" placeholder="Message / camera you want (e.g. Canon 700D for 2 days)" required></textarea>
   </div>
 
   <button class="wa-btn" type="submit">
+    <!-- small icon + label -->
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true" style="width:18px;height:18px;margin-right:6px">
+      <path d="M20.5 3.5..." fill="#fff"/> <!-- placeholder path, optional -->
+    </svg>
     Send via WhatsApp
   </button>
 
   <div class="wa-hint">Or WhatsApp directly: <strong>+91 81478 50858</strong></div>
+
+  <div id="waSuccess" class="wa-success" role="status" aria-live="polite">Opening WhatsApp — we’ll show confirmation here after sending.</div>
 </form>
+
+<!-- floating quick WA button (visible always) -->
+<div id="waFloat" class="wa-float" title="Chat on WhatsApp" aria-label="Chat on WhatsApp">
+  <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+    <path d="M20.52 3.48A11.95 11.95 0 0012 0C5.37 0 0 5.37 0 12c0 2.11.55 4.09 1.6 5.86L0 24l6.4-1.65A11.95 11.95 0 0012 24c6.63 0 12-5.37 12-12 0-3.21-1.25-6.24-3.48-8.52z" fill="#fff" opacity=".06"/>
+    <path d="M17.47 14.38c-..." fill="#fff"/>
+  </svg>
+</div>
 
 <div id="waToast" class="wa-toast">Opening WhatsApp…</div>
 
 <script>
+/* --- utilities --- */
 function showToast(text) {
   const t = document.getElementById('waToast');
   t.textContent = text || 'Opening WhatsApp…';
@@ -199,6 +215,15 @@ function showToast(text) {
   setTimeout(()=>{ t.style.display='none'; }, 2500);
 }
 
+function showSuccess(text) {
+  const el = document.getElementById('waSuccess');
+  el.textContent = text || 'Message ready in WhatsApp.';
+  el.style.display = 'block';
+  // auto hide after 6s
+  setTimeout(()=>{ el.style.display = 'none'; }, 6000);
+}
+
+/* --- main send function (enhanced) --- */
 function sendWhatsAppModern() {
   const name = document.getElementById("name").value.trim();
   const mobile = document.getElementById("mobile").value.trim();
@@ -209,17 +234,52 @@ function sendWhatsAppModern() {
     return;
   }
 
-  let text = `Name: ${name}\nMobile: ${mobile}\nMessage: ${msg}`;
+  // prepare message
+  const text = `Name: ${name}\nMobile: ${mobile}\nMessage: ${msg}`;
   const encoded = encodeURIComponent(text);
 
-  // your WhatsApp number (with country code, no +)
+  // your WhatsApp number (country code, no +)
   const phone = "918147850858";
 
-  showToast("Opening WhatsApp…");
-  window.open(`https://wa.me/${phone}?text=${encoded}`, "_blank");
+  // UX: show toast + success banner immediately
+  showToast('Opening WhatsApp…');
+  showSuccess('Opening WhatsApp. Complete the message in WhatsApp to send.');
+
+  // open wa link
+  window.open(`https://wa.me/${phone}?text=${encoded}`, '_blank');
 }
+
+/* --- floating button handler (quick chat) --- */
+document.getElementById('waFloat').addEventListener('click', function(){
+  const phone = "918147850858";
+  // small default message
+  const encoded = encodeURIComponent('Hi, I want to enquire about camera rentals.');
+  showToast('Opening WhatsApp…');
+  window.open(`https://wa.me/${phone}?text=${encoded}`, '_blank');
+});
+
+/* --- dark mode toggle and persistence --- */
+(function initDarkMode(){
+  const root = document.documentElement;
+  const saved = localStorage.getItem('jmkv-theme');
+  if (saved === 'dark') { root.setAttribute('data-theme','dark'); document.getElementById('darkToggle').textContent = '☀️'; }
+  else { root.removeAttribute('data-theme'); document.getElementById('darkToggle').textContent = '🌙'; }
+
+  document.getElementById('darkToggle').addEventListener('click', function(){
+    if (document.documentElement.getAttribute('data-theme') === 'dark') {
+      document.documentElement.removeAttribute('data-theme');
+      localStorage.setItem('jmkv-theme','light');
+      this.textContent = '🌙';
+    } else {
+      document.documentElement.setAttribute('data-theme','dark');
+      localStorage.setItem('jmkv-theme','dark');
+      this.textContent = '☀️';
+    }
+  });
+})();
 </script>
-<!-- END - Modern WhatsApp Contact Form -->
+<!-- END - Modern WhatsApp Contact Form (enhanced) -->
+
 
         </form>
 
